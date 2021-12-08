@@ -1,0 +1,42 @@
+[
+	{
+		"login": "anonymousUser",
+		"firstName": "Anonymous",
+		"lastName": "User",
+		"email": "",
+		"hash": "",
+		"accessGroups": "loggedOutUsers"
+	},
+	{
+		"login": "jj",
+		"firstName": "James",
+		"lastName": "JustSignedUpton",
+		"email": "jj@gmail.com",
+		"hash": "nnn",
+		"accessGroups": "loggedInUsers,members"
+	},
+	{
+		"login": "aa",
+		"firstName": "Ashley",
+		"lastName": "Approvedmemberton",
+		"email": "aa@gmail.com",
+		"hash": "nnn",
+		"accessGroups": "loggedInUsers, members"
+	},
+	{
+		"login": "kc",
+		"firstName": "Kyle",
+		"lastName": "ContentEditorton",
+		"email": "kc@gmail.com",
+		"hash": "nnn",
+		"accessGroups": "loggedInUsers, members, contentEditors"
+	},
+	{
+		"login": "ma",
+		"firstName": "Mindy",
+		"lastName": "Administraton",
+		"email": "ma@gmail.com",
+		"hash": "nnn",
+		"accessGroups": "loggedInUsers,members, admins"
+	}
+]
