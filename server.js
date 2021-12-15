@@ -8,26 +8,31 @@ import UserModel from "./models/User.js";
 import bcrypt from 'bcrypt';
 
 dotenv.config();
-
 mongoose.connect(process.env.MONGODB_URI);
 
 const app = express();
-const PORT = 3003;
-
-app.use(cookieParser());
-app.use(cors(
-	{
-		origin: 'http://localhost:3000',
-		credentials: true
-	}
-));
+const PORT = process.env.PORT || 3003;
 
 app.use(express.json());
+
+app.set('trust proxy', 1);
+app.use(cors({
+	origin: process.env.NODE_ENV !== "production" ? process.env.FRONTEND_ORIGIN : [process.env.FRONTEND_ORIGIN_HTTP, process.env.FRONTEND_ORIGIN_HTTPS],
+	credentials: true
+}));
+
+app.use(cookieParser());
 app.use(
 	session({
+		secret: process.env.SESSION_SECRET,
 		resave: true,
 		saveUninitialized: true,
-		secret: process.env.SESSION_SECRET || "use-env-secret728272"
+		cookie: {
+			httpOnly: true,
+			maxAge: 60 * 60 * 24,
+			sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+			secure: process.env.NODE_ENV === "production"
+		}
 	})
 );
 
@@ -38,14 +43,26 @@ const userIsInGroup = (user, accessGroup) => {
 
 app.post("/login", async (req, res) => {
 	const login = req.body.login;
-	// const password = req.body.password;
+	const password = req.body.password;
 	let user = await UserModel.findOne({ login });
 	if (!user) {
 		user = await UserModel.findOne({ login: "anonymousUser" });
+		req.session.user = user;
+		req.session.save();
+		res.status(403).json(user);
+	} else {
+		const passwordsMatch = await bcrypt.compare(password, user.hash);
+		if (passwordsMatch) {
+			req.session.user = user;
+			req.session.save();
+			res.json(user);
+		} else {
+			user = await UserModel.findOne({ login: "anonymousUser" });
+			req.session.user = user;
+			req.session.save();
+			res.status(403).json(user);
+		}
 	}
-	req.session.user = user;
-	req.session.save();
-	res.json(user);
 });
 
 app.post("/signup", async (req, res) => {
@@ -76,9 +93,11 @@ app.get("/currentuser", async (req, res) => {
 	if (!user) {
 		user = await UserModel.findOne({ login: "anonymousUser" });
 	}
+	// setTimeout(() => {
 	res.json({
 		user
 	});
+	// }, 4000);
 });
 
 app.post("/approveuser", async (req, res) => {
